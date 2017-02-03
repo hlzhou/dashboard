@@ -21,33 +21,44 @@
 ###############################################################################
 
 from django.http import HttpResponse
-import pywapi
+import pyowm
 import json
 
 def getWeather(request):
     try:
+	print('Trying to get weather...')
         # Zip Code
         location_id = '02139'
-        forecast = pywapi.get_weather_from_yahoo(location_id, '')
+        owm = pyowm.OWM("40964e665cd10d202b248a68c1b688fe")
+	CITY_ID = 5111144
+	current = owm.weather_at_id(CITY_ID)
+	w = current.get_weather()
+	fc = owm.daily_forecast_at_id(CITY_ID, limit=2)
 
-        tmp_condition = forecast['condition']
-        current = { 'temp': tmp_condition['temp'],
-                    'description': tmp_condition['text'],
-                    'icon': code2image(tmp_condition['code']),}
+	forecast_weather = [fo for fo in fc.get_forecast()]
+	current_weather = w
 
-        tmp_today = forecast['forecasts'][0]
-        today = { 'high': tmp_today['high'],
-                  'low': tmp_today['low'],
-                  'description': tmp_today['text'],
-                  'icon': code2image(tmp_today['code']),}
+        current = { 'temp': current_weather.get_temperature('fahrenheit')['temp'],
+                    'description': current_weather.get_detailed_status(),
+                    'icon': code2image(current_weather.get_weather_icon_name()),}
+	
+	w_today = forecast_weather[0]
+	temp_today = w_today.get_temperature('fahrenheit')
+        today = { 'high': temp_today['max'],
+                  'low': temp_today['min'],
+                  'description': w_today.get_detailed_status(),
+                  'icon': code2image(w_today.get_weather_icon_name()),}
 
-        tmp_tomorrow = forecast['forecasts'][1]
-        tomorrow = { 'high': tmp_tomorrow['high'],
-                     'low': tmp_tomorrow['low'],
-                     'description': tmp_tomorrow['text'],
-                     'icon': code2image(tmp_tomorrow['code']),}
+	
+	w_tomorrow = forecast_weather[1]
+	temp_tomorrow = w_tomorrow.get_temperature('fahrenheit')
+        tomorrow = { 'high': temp_tomorrow['max'],
+                  'low': temp_tomorrow['min'],
+                  'description': w_tomorrow.get_detailed_status(),
+                  'icon': code2image(w_tomorrow.get_weather_icon_name()),}
 
-    except:
+    except Exception as e:
+	print('Exception: ', e)
         current = {'temp': 'NA',
                    'description': 'NA',
                    'icon': 'NA',}
@@ -70,22 +81,23 @@ def code2image(code):
 		'0':'windy.png',
 		'1':'windy.png',
 		'2':'windy.png',
-		'3':'thunder.png',
-		'4':'thunder.png',
+		'11d':'thunder.png',
+		'11n':'thunder.png',
 		'5':'mixed.png',
 		'6':'mixed.png',
 		'7':'mixed.png',
 		'8':'mixed.png',
-		'9':'rain.png',
+		'10d':'rain.png',
+                '10n':'rain.png',
 		'10':'mixed.png',
 		'11':'rain.png',
 		'12':'rain.png',
-		'13':'snow.png',
+		'Snow':'snow.png',
 		'14':'snow.png',
 		'15':'snow.png',
 		'16':'snow.png',
-		'17':'mixed.png',
-		'18':'mixed.png',
+		'50d':'mixed.png',
+		'50n':'mixed.png',
 		'19':'foggy.png',
 		'20':'foggy.png',
 		'21':'foggy.png',
@@ -93,23 +105,24 @@ def code2image(code):
 		'23':'windy.png',
 		'24':'windy.png',
 		'25':'cold.png',
-		'26':'cloudy.png',
-		'27':'cloudy.png',
-		'28':'cloudy.png',
-		'29':'patchy_night.png',
-		'30':'patchy.png',
-		'31':'clear_night.png',
-		'32':'sunny.png',
+		'04d':'cloudy.png',
+		'04n':'cloudy.png',
+		'03d':'cloudy.png',
+		'03n':'cloudy.png',
+		'02n':'patchy_night.png',
+		'02d':'patchy.png',
+		'01n':'clear_night.png',
+		'01d':'sunny.png',
 		'33':'clear_night.png',
 		'34':'sunny.png',
 		'35':'mixed.png',
 		'36':'hot.png',
-		'37':'thunder.png',
-		'38':'thunder.png',
+		'11d':'thunder.png',
+		'11n':'thunder.png',
 		'39':'thunder.png',
 		'40':'rain.png',
-		'41':'snow.png',
-		'42':'snow.png',
+		'13d':'snow.png',
+		'13n':'snow.png',
 		'43':'snow.png',
 		'44':'patchy.png',
 		'45':'thunder.png',

@@ -40,7 +40,7 @@ def home(request):
 	# 	if i % 2:
 	# 		slides.append(Slide("WIDGET"))
 	# 	slides.append(Slide("POSTER", img_urls[i]))
-	slides.append(Slide("PACKAGE-LIST"))
+	slides.append(Slide("WIDGET"))
 
 	return render(request, "index.html", {"slides": slides})
 
